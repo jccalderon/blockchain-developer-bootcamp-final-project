@@ -8,14 +8,29 @@
 /// @dev The contract uses an oracle 
 /// @custom:experimental This is a Minimum Viable Product.
 
-enum Role {Producer, Client}
-
-
 pragma solidity ^0.8.0;
 
 import "@chainlink/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol";
 
-contract Charlize is KeeperCompatibleInterface{
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "hardhat/console.sol";
+contract Charlize is KeeperCompatibleInterface, Ownable{
+    
+    uint256 initialTimestamp;
+    // Last time the keeper executed the performUpkeep function
+    uint256 lastUpkeep;
+    
+    enum Role {Producer, Client}
+
+
+    constructor(uint256 _initialTimestamp){
+
+        
+        initialTimestamp = _initialTimestamp;
+        lastUpkeep = _initialTimestamp;
+
+
+    }
 
     /// @notice registers users (producer or client)
     /// @dev stores user's data in a User struct containing: 
@@ -67,18 +82,24 @@ contract Charlize is KeeperCompatibleInterface{
     ///      When the current date corresponds to the first day of the month, the 
     ///      condition is met. However, for testing purposes, when the condition will 
     ///      be met every hour.  
-
-    /// @param checkData (not used in this case)
+    /// @param /*checkData*/ (not used in this case)
     /// @return upkeepNeeded (if true the keeper executes the performUpkeep function)
-    function checkUpkeep(bytes calldata checkData) external override returns (bool upkeepNeeded, bytes memory /* performData */) {
-       
-        
+    ///         /*performData*/ not used  
+    function checkUpkeep(bytes memory /*checkData*/) 
+        external view override 
+        returns (bool upkeepNeeded, bytes memory /* performData */) {
+
+            require(block.timestamp >= initialTimestamp);
+            upkeepNeeded = (block.timestamp - lastUpkeep) > 1 hours;  
+
     }
 
-    /// @param performData (not used in this case)
-    function performUpkeep(bytes calldata performData) external override {
+    /// @param /*performData*/ (not used in this case)
+    function performUpkeep(bytes calldata /*performData*/) external override {
 
-        
+    
+        // check what has expired 
+        lastUpkeep = block.timestamp;
     }   
     
 }
