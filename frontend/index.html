@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        Charlize
+    </title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;700&family=Open+Sans:wght@400;700&family=Oswald:wght@700&family=Press+Start+2P&family=Pushster&family=Roboto:wght@400;700&family=Rubik+Mono+One&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/charlize.css">
+    <link rel="stylesheet" href="styles/config.css">
+    <link rel="stylesheet" href="styles/styles.css">
+    <script src="scripts/ABI/charlizeABI.js" defer></script>
+    <script src="scripts/ABI/charlizeadminsetABI.js"></script>
+    <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"
+            type="application/javascript" defer></script>
+    <script src="scripts/config.js" defer></script>
+    <script src="scripts/charlize.js" defer></script>
+    <script src="scripts/app.js" defer></script>
+</head>
+<body>
+    <div id="wallet-information"></div>
+    <div id="connect-wallet-button">
+        <button type="submit" class="btn">Connect</button>
+    </div>
+    <header id="main-header">
+        <h1>Charlize</h1>
+        <p>Manage the expiration date of your reactives in a decentralized way</p>
+    </header>
+    <main>
+
+        <section class="first-page">
+            <p id="first-page-text">Connect to the <span id="connect-kovan-network">Kovan network</span> using your wallet and choose one of the following roles: <br> <span id="connect-to-producer">Producer</span>,   <span id="connect-to-client">Client</span> or  <span id="connect-to-admin">Administrator</span></p>  
+        </section>
+        <section id="registration">
+            <form id="registration-form">
+                <h2 id="registration-form-text">Register as PRODUCER/CLIENT/ADMIN</h2>
+                <div class="form-control">
+                    <label for="user-registration">E-mail</label>
+                    <input type="email" id="user-registration" name="user-email" required>
+                </div>
+                <p id="config-errors"></p>
+                <div>
+                    <button id="log-out-button-1" class="btn btn-alt">Log out</button>
+                    <button type="submit" class="btn">Submit</button>
+                </div>
+                <p id="successful-application">Successful registration as Admin! please proceed to <span id="validate-registrations">validatate user registration applications</span></p>
+            </form>
+        </section>
+        <section id="charlize">
+            <form id="charlize-form">
+                <h2 id="charlize-form-text">CREATE REAGENT OR SUBSCRIBE TO REAGENT</h2>
+                <div class="form-control">
+                    <label for="ndc-code">National Drug Code (NDC)</label>
+                    <input type="number" id="ndc-code" name="ndc-code"required>
+                </div>
+                <div class="form-control">
+                    <label for="lot-number">Lot Number</label>
+                    <input type="number" id="lot-number" name="lot-number" required>
+                </div>
+                <div id="date-time-form" class="form-control">
+                    <label for="date-time">Offset added to current Date time</label>
+                    <input type="number" id="date-time" name="date-time-offset" required step="5" min="5" value="5">
+                </div>
+                <p id="config-errors"></p>
+                <div>
+                    <button id="log-out-button-2" class="btn btn-alt">Logout</button>
+                    <button type="submit" class="btn">Submit</button>
+                </div>
+            </form>
+        </section>  
+        <section id="charlize-pending-registrations">
+            <form id="charlize-pending-registrations-form">
+                <h2>Registration waiting for approval:</h2>
+                <div class="inline-control">
+                    <input type="checkbox" name="address-to-approve" id="address-to-approve" required>
+                    <label id="address-to-approve-label" for="adress-to-approve">Loading...</label>
+                </div>            
+                <div>
+                    <button id="log-out-button-3" class="btn btn-alt">Logout</button>
+                    <!-- <button id="next-address" class="btn">Next</button> -->
+                    <button id="approve-address" type="submit" class="btn">Approve</button>
+                </div>
+                <p id="charlize-pending-registrations-text">There are no registrations to approve!</p>               
+            </form>
+            <button id="next-address" class="btn">Next</button>
+        </section>      
+    </main>
+</body>
+</html>

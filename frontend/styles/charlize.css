@@ -1,0 +1,27 @@
+#charlize {
+  text-align: center;
+  margin: 1rem;
+  display: none;
+}
+
+.inline-control {
+  display: flex;
+}
+
+.inline-control label {
+  margin: 0;
+  margin-left: 0.5rem;
+}
+
+.inline-control input {
+  width: auto;
+}
+
+#charlize-pending-registrations {
+  text-align: center;
+  display: none;
+}
+#charlize-pending-registrations-text {
+  text-align: center;
+  display: none;
+}

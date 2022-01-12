@@ -1,0 +1,40 @@
+#connect-wallet-button {
+  margin: 2rem;
+  margin-bottom: 0%;
+  text-align: right;
+}
+
+#registration {
+  text-align: center;
+  display: none;
+}
+.form-control {
+  margin: 0.5 0;
+}
+
+.form-control label {
+  display: block;
+  margin-top: 1.5rem;
+  margin-bottom: 0.2rem;
+  /*font-weight: bold;*/
+}
+
+.first-page {
+  text-align: center;
+}
+
+#first-page-text {
+  display: block;
+}
+
+#successful-application {
+  display: none;
+}
+
+#next-address {
+  display: block;
+}
+
+#approve-address {
+  display: block;
+}

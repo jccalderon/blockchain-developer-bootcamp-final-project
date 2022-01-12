@@ -7,7 +7,9 @@ pragma solidity 0.8.10;
 /// @notice Producers create reagent profiles and clients
 ///         register to receive an email alert when the bought 
 ///         reagent, already created by the producer, expired
-/// @dev The contract uses an oracle 
+/// @dev The contract uses an oracle for the smart contract to 
+///      periodically wakeup and check what reagents expired by 
+//       emiting an event
 /// @custom:experimental This is a Minimum Viable Product.
 
 import "@chainlink/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol";
@@ -21,24 +23,24 @@ contract Charlize is KeeperCompatibleInterface, Ownable, AccessControl{
     /// ***********************************************************************
     ///@dev VARIABLES:
 
-    uint256 initialTimestamp;
+    uint256 public initialTimestamp;
     // Oracle's periodicity used to check what reagent has expired
     /// @dev to ease the process of testing, set this variable to 5 minutes(300 seconds);
-    uint256 intervalTime;
+    uint256 public intervalTime;
     // Last time the keeper executed the performUpkeep function
-    uint256 lastUpkeep; 
+    uint256 public lastUpkeep; 
     // helps to check the keeper is working
     uint256 public counter;
     
-    uint256 reagentCount;
+    uint256 public reagentCount;
     
-    uint256 producerCount;
+    uint256 public producerCount;
     
-    uint256 userApplicationCount;
+    uint256 public userApplicationCount;
     
-    uint256 balance;
+    uint256 public balance;
     
-    uint256 adminApplicationFee;
+    uint256 public adminApplicationFee;
     
      /// ***********************************************************************
     ///@dev CONSTANTS:
@@ -50,6 +52,11 @@ contract Charlize is KeeperCompatibleInterface, Ownable, AccessControl{
     // ADMIN is role: 3
     bytes32 public constant ADMIN = keccak256("ADMIN");
     
+    /// ***********************************************************************
+    ///@dev ARRAYS:
+
+    address[] public addressesInPendingState;
+    
     
     /// ***********************************************************************
     ///@dev MAPPINGS:
@@ -57,17 +64,20 @@ contract Charlize is KeeperCompatibleInterface, Ownable, AccessControl{
     mapping(address => UserState) userAddressToStateOfUser;
     mapping(address => uint256) userAddressToRegistrationDate;
     mapping(bytes32 => uint256) reagentIDToReagentCreationDate;
+    mapping(address => uint256) userAddressToRoleNumber;
     
     
      /// ***********************************************************************
     ///@dev EVENTS:
     
-    event ReagentCreation(bytes32 indexed reagentID, uint256 reagentNDC, uint256 reagentLotNumber, address producerAddress, uint256 indexed expirationDate, uint256 CreationDate);
-    event SubscribedToReagent(bytes32 indexed reagentID, address indexed clientAddress, uint256 indexed reagentCreationDate);
+    event ReagentCreation(/*bytes32 indexed reagentID,*/ uint256 reagentNDC, uint256 reagentLotNumber, address producerAddress, uint256 indexed expirationDate);
+    event SubscribedToReagent(address indexed clientAddress, uint256 indexed reagentNDC, uint256 indexed reagentLotNumber);
     event UserRegistered(address indexed userAddress, uint256 roleNumber, string email, UserState indexed stateOfUser, uint256 indexed registrationDate);
-    event CheckExpirationDate(uint256 expirationCheck);
-    event AccessGranted(address indexed userAddress, UserState indexed stateOfUser, uint256 indexed registrationDate);
+    event CheckExpirationDate();
+    event AccessGrantedToAdmin(address indexed userAddress, UserState indexed stateOfUser, uint256 indexed registrationDate);
+    event AccessGrantedToUser(address indexed userAddress, UserState indexed stateOfUser, uint256 indexed registrationDate);
     event LogDeposit(address adminApplicantAddress);
+    event PoppedAddressFromPendingStateArray(string poppedAddress);
     
     
     /// ***********************************************************************
@@ -88,7 +98,7 @@ contract Charlize is KeeperCompatibleInterface, Ownable, AccessControl{
     /// @dev CONSTRUCTOR:
     
     
-        constructor(uint256 _initialTimestamp, uint256 _intervalTime, uint256 _adminApplicationFee){
+        constructor(uint256 _initialTimestamp, uint256 _intervalTime, address _admin, uint256 _adminApplicationFee){
 
         
         initialTimestamp = _initialTimestamp;
@@ -99,6 +109,7 @@ contract Charlize is KeeperCompatibleInterface, Ownable, AccessControl{
         // to grant and revoke any roles
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setRoleAdmin(ADMIN, DEFAULT_ADMIN_ROLE);
+        _setupRole(DEFAULT_ADMIN_ROLE, _admin);
 
 
     }
@@ -174,14 +185,40 @@ contract Charlize is KeeperCompatibleInterface, Ownable, AccessControl{
         grantRole(role, userAddress);
         userAddressToStateOfUser[userAddress] = UserState.ACCEPTED;
         uint256 registrationDate = block.timestamp;
-        emit AccessGranted(userAddress, UserState.ACCEPTED, registrationDate);
+        emit AccessGrantedToUser(userAddress, UserState.ACCEPTED, registrationDate);
         
     }
 
+    function getPendingStateAddress() public onlyAdmin returns (address){
+        uint256 arrayLength = getLengthAddressInPendingStateArray();
+        address pendingStateAddress = getAddressInPendingState(arrayLength);
+        popAddressInPendingState();
+        // arrayLength = getLengthAddressInPendingStateArray();
+        return pendingStateAddress;
+    }
+    function getAddressInPendingState(uint256 positionInArray) public view returns (address) {
+        return addressesInPendingState[positionInArray];
+    }
+
+    function pushAddressInPendingState(address addressInPendingState) public {
+        addressesInPendingState.push(addressInPendingState);
+    }
+
+    function popAddressInPendingState() public {
+        addressesInPendingState.pop();
+        emit PoppedAddressFromPendingStateArray("Address popped");
+    }
+
+    function getLengthAddressInPendingStateArray()  public view returns(uint256){
+        return addressesInPendingState.length;
+    }
+
+    function getRoleNumberOfUserAddress(address userAddress) public view returns(uint256){
+        return userAddressToRoleNumber[userAddress];
+    }
 
 
-
-    function revokeAccess(address userAddress) public virtual onlyAdmin{
+    function revokeAccess(address userAddress) public virtual onlyOwner{
         // TODO:
         // admin revokes access 
         // ONLY onlyOwner can revoke admin roles
@@ -212,11 +249,14 @@ contract Charlize is KeeperCompatibleInterface, Ownable, AccessControl{
     // DEFAULT_ADMIN_ROLE in another function reads the data of the users in pending state
     // DEFAULT_ADMIN_ROLE grants access to users and changes state of users accepted
     // DEFAULT_ADMIN_ROLE may not grant access to users and changes state of users to rejected
-    require(userAddressToRegistrationDate[msg.sender] > 0, "This user is already registered, contact Admin");
+    require(userAddressToRegistrationDate[msg.sender] == 0, "This user is already registered, contact Admin");
     userApplicationCount = userApplicationCount + 1;
     UserState stateOfUser = UserState.PENDING;
+    pushAddressInPendingState(msg.sender);
+    userAddressToRoleNumber[msg.sender] = roleNumber;
     userAddressToStateOfUser[msg.sender] = stateOfUser; 
     uint256 registrationDate = block.timestamp;
+    userAddressToRegistrationDate[msg.sender] = registrationDate;
     emit UserRegistered( msg.sender, roleNumber, email, stateOfUser, registrationDate);
     }
     
@@ -225,7 +265,7 @@ contract Charlize is KeeperCompatibleInterface, Ownable, AccessControl{
 
     /// @dev ADMIN REGISTRATION FUNCTIONS:        
     
-    function registerAdmin() public payable{
+    function registerAdmin(address adminApplicant) public payable returns(uint256){
     // user sends application form with data.
     // contract checks the user's address is not already registered  
     // Data is stored in an array of structs.
@@ -233,17 +273,26 @@ contract Charlize is KeeperCompatibleInterface, Ownable, AccessControl{
     // DEFAULT_ADMIN_ROLE in another function reads the data of the users in pending state
     // DEFAULT_ADMIN_ROLE grants access to users and changes state of users accepted
     // DEFAULT_ADMIN_ROLE may not grant access to users and changes state of users to rejected
-        require(userAddressToRegistrationDate[msg.sender] > 0, "This Admin is already registered");
-        require(msg.value == adminApplicationFee, "Value transfered is not enough to cover Admin application");
+        require(userAddressToRegistrationDate[adminApplicant] == 0, "This Admin is already registered");
+        require(msg.value == adminApplicationFee * 1 wei, "Value transfered is not enough to cover Admin application");
         balance += msg.value;
-        grantRole(ADMIN, msg.sender);
-        userAddressToStateOfUser[msg.sender] = UserState.ACCEPTED;
-        uint256 registrationDate = block.timestamp;
-        emit AccessGranted(msg.sender, UserState.ACCEPTED, registrationDate);
+        console.log("Admin application fee received");
+        grantRole(DEFAULT_ADMIN_ROLE, adminApplicant);
+        userAddressToStateOfUser[adminApplicant] = UserState.ACCEPTED;
+        uint256 registrationAdminDate = block.timestamp;
+        userAddressToRegistrationDate[adminApplicant] = registrationAdminDate;
+        emit AccessGrantedToAdmin(adminApplicant, UserState.ACCEPTED, registrationAdminDate);
+        console.log("address: %s granted admin role on %s", adminApplicant, registrationAdminDate);
+        return registrationAdminDate;
+        
     
     }
     
-    
+    function getUserState(address userAddress) public view returns(UserState){
+
+        return userAddressToStateOfUser[userAddress];        
+
+    }
     
     /// ***********************************************************************
 
@@ -259,8 +308,10 @@ contract Charlize is KeeperCompatibleInterface, Ownable, AccessControl{
         bytes32 reagentID = reagentId(reagentNDC, reagentLotNumber);
         require(!(reagentIDToReagentCreationDate[reagentID] > 0), "Reagent already existing!");
         uint256 reagentCreationDate = block.timestamp; 
+        reagentIDToReagentCreationDate[reagentID] = reagentCreationDate;
         reagentCount = reagentCount + 1;
-        emit ReagentCreation(reagentID, reagentNDC, reagentLotNumber, msg.sender, expirationDate, reagentCreationDate);
+        console.log(reagentNDC, reagentLotNumber, msg.sender, expirationDate);
+        emit ReagentCreation(/*reagentID,*/reagentNDC, reagentLotNumber, msg.sender, expirationDate);
         
     }
 
@@ -277,8 +328,9 @@ contract Charlize is KeeperCompatibleInterface, Ownable, AccessControl{
         // emit log
         bytes32 reagentID = reagentId(reagentNDC, reagentLotNumber);
         require(reagentIDToReagentCreationDate[reagentID] > 0, "Solicited Reagent doesn't exist, contact Admin");
-        uint256 subscriptionDate = block.timestamp;
-        emit SubscribedToReagent(reagentID, msg.sender, subscriptionDate);
+        // uint256 subscriptionDate = block.timestamp;
+        console.log("subscribed to reagentID");
+        emit SubscribedToReagent(msg.sender, reagentNDC, reagentLotNumber);
         
         
     }
@@ -325,7 +377,7 @@ contract Charlize is KeeperCompatibleInterface, Ownable, AccessControl{
         
         counter = counter + 1;
         
-        emit CheckExpirationDate(currentTimestamp);
+        emit CheckExpirationDate();
         
         // check what has expired 
         lastUpkeep = currentTimestamp;
@@ -342,4 +394,20 @@ contract Charlize is KeeperCompatibleInterface, Ownable, AccessControl{
         emit LogDeposit(msg.sender);
     }
     
+}
+
+
+
+contract CharlizeAdminSet is Ownable{
+    
+    constructor(){
+        
+    }
+    
+    function registerAdmin(Charlize charlize) public payable returns(uint256){
+        console.log("Inside registerAdmin - CharlizeAdminSet");
+        return charlize.registerAdmin{value: msg.value}(msg.sender);
+
+    }
+
 }
