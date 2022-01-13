@@ -23,6 +23,7 @@ async function connectWallet() {
     ethers.utils.formatEther(userAddressBalance) +
     " Eth";
   connectElement.innerHTML = "Connected";
+  isAccountConnected = true;
 
   //// when an operation implies change of state like a transaction then you use
   //// the signer (provider.getSigner()), but if you are going to only read, use
@@ -40,6 +41,17 @@ async function connectWallet() {
 
 function reloadPage() {
   window.location.reload();
+}
+
+function reloadPageWhenAccountChanged() {
+  connectWallet();
+  goToFirstPage();
+}
+
+function goToFirstPage() {
+  firstPageTextElement.style.display = "block";
+  registrationElement.style.display = "none";
+  charlizeElement.style.display = "none";
 }
 
 async function userRegistration(event) {

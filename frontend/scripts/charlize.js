@@ -1,4 +1,8 @@
 async function producerFunctionality() {
+  if (!isAccountConnected) {
+    alert("Please, first click the Connect button at the top right");
+    return;
+  }
   // Producer role
   roleNumber = 1;
 
@@ -25,6 +29,10 @@ async function producerFunctionality() {
 }
 
 async function clientFunctionality() {
+  if (!isAccountConnected) {
+    alert("Please, first click the Connect button at the top right");
+    return;
+  }
   //Client role
   roleNumber = 2;
 
@@ -51,6 +59,11 @@ async function clientFunctionality() {
 }
 
 async function adminFunctionality() {
+  if (!isAccountConnected) {
+    alert("Please, first click the Connect button at the top right");
+    return;
+  }
+
   // Admin role
   roleNumber = 3;
 
@@ -106,10 +119,11 @@ async function reagentCreationOrSubscription(event) {
       CHARLIZE_ABI,
       provider
     );
+    console.log("control check 1");
 
-    charlizeReagentEvents.on(
+    charlizeReagentEvents.once(
       "ReagentCreation",
-      (reagentNDC, reagentLotNumber, userAddress, expirationDate) => {
+      async (reagentNDC, reagentLotNumber, userAddress, expirationDate) => {
         console.log("Reagent Created!!");
         console.log(reagentNDC, reagentLotNumber, userAddress, expirationDate);
         let reagentCreationLog = {
@@ -135,9 +149,9 @@ async function reagentCreationOrSubscription(event) {
       provider
     );
 
-    charlizeSubscriptionToReagentEvents.on(
+    charlizeSubscriptionToReagentEvents.once(
       "SubscribedToReagent",
-      (userAddress, reagentNDC, reagentLotNumber) => {
+      async (userAddress, reagentNDC, reagentLotNumber) => {
         console.log("Subscribed to Reagent!!");
         console.log(userAddress, reagentNDC, reagentLotNumber);
         let reagentSubscriptionLog = {
@@ -159,7 +173,7 @@ async function oracleFunction() {
     provider
   );
 
-  charlizeOracleEvents.on("CheckExpirationDate", () => {
+  charlizeOracleEvents.on("CheckExpirationDate", async () => {
     console.log("Oracle Counter: %d", oracleCounter);
     oracleElement.innerText = "Oracle Counter: " + oracleCounter;
     oracleCounter++;

@@ -44,7 +44,7 @@
                 </div>
                 <p id="config-errors"></p>
                 <div>
-                    <button id="log-out-button-1" class="btn btn-alt">Log out</button>
+                    <button type="button"id="log-out-button-1" class="btn btn-alt">Log out</button>
                     <button type="submit" class="btn">Submit</button>
                 </div>
                 <p id="successful-application">Successful registration as Admin! please proceed to <span id="validate-registrations">validatate user registration applications</span></p>
@@ -55,7 +55,7 @@
                 <h2 id="charlize-form-text">CREATE REAGENT OR SUBSCRIBE TO REAGENT</h2>
                 <div class="form-control">
                     <label for="ndc-code">National Drug Code (NDC)</label>
-                    <input type="number" id="ndc-code" name="ndc-code"required>
+                    <input type="number" id="ndc-code" name="ndc-code" required>
                 </div>
                 <div class="form-control">
                     <label for="lot-number">Lot Number</label>
@@ -67,10 +67,11 @@
                 </div>
                 <p id="config-errors"></p>
                 <div>
-                    <button id="log-out-button-2" class="btn btn-alt">Logout</button>
+                    <button type="button" id="log-out-button-2" class="btn btn-alt">Logout</button>
                     <button type="submit" class="btn">Submit</button>
                 </div>
             </form>
+            <!-- <button id="log-out-button-2" class="btn btn-alt">Logout</button> -->
         </section>  
         <section id="charlize-pending-registrations">
             <form id="charlize-pending-registrations-form">
@@ -86,7 +87,7 @@
                 </div>
                 <p id="charlize-pending-registrations-text">There are no registrations to approve!</p>               
             </form>
-            <button id="next-address" class="btn">Next</button>
+            <button type="button" id="next-address" class="btn">Next</button>
         </section>   
         <div id="oracle"></div>
         <div id="expired-reagents"></div>   

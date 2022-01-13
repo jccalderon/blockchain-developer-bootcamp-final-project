@@ -7,6 +7,7 @@ let addressInPendingState;
 let userAddress;
 let reagentCreationLogs = [];
 let reagentSubscriptionLogs = [];
+let isAccountConnected = false;
 
 const connectElement = document.getElementById("connect-wallet-button");
 
@@ -81,7 +82,7 @@ window.addEventListener("load", detectWallet);
 
 const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
 
-window.ethereum.on("accountsChanged", reloadPage);
+window.ethereum.on("accountsChanged", reloadPageWhenAccountChanged);
 window.ethereum.on("chainChanged", reloadPage);
 window.ethereum.on("disconnect", reloadPage);
 
@@ -94,9 +95,9 @@ connectToAdminElement.addEventListener("click", adminFunctionality);
 
 registrationFormElement.addEventListener("submit", userRegistration);
 
-logOutElement1.addEventListener("click", reloadPage);
-logOutElement2.addEventListener("click", reloadPage);
-logOutElement3.addEventListener("click", reloadPage);
+logOutElement1.addEventListener("click", goToFirstPage);
+logOutElement2.addEventListener("click", goToFirstPage);
+logOutElement3.addEventListener("click", goToFirstPage);
 
 charlizeFormElement.addEventListener("submit", reagentCreationOrSubscription);
 
