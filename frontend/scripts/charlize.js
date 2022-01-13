@@ -82,7 +82,8 @@ async function reagentCreationOrSubscription(event) {
   console.log(dateTimeOffset);
   console.log(roleNumber);
 
-  let expirationDate = Math.round(new Date().getTime() / 1000) + dateTimeOffset;
+  let expirationDate =
+    Math.round(new Date().getTime() / 1000) + parseInt(dateTimeOffset) * 60;
 
   console.log(expirationDate);
 
@@ -111,6 +112,14 @@ async function reagentCreationOrSubscription(event) {
       (reagentNDC, reagentLotNumber, userAddress, expirationDate) => {
         console.log("Reagent Created!!");
         console.log(reagentNDC, reagentLotNumber, userAddress, expirationDate);
+        let reagentCreationLog = {
+          reagentNDC: parseInt(reagentNDC._hex, 16),
+          reagentLotNumber: parseInt(reagentLotNumber._hex, 16),
+          userAddress: userAddress,
+          expirationDate: parseInt(expirationDate._hex, 16),
+        };
+        console.log(reagentCreationLog);
+        reagentCreationLogs.push(reagentCreationLog);
       }
     );
   } else {
@@ -131,6 +140,13 @@ async function reagentCreationOrSubscription(event) {
       (userAddress, reagentNDC, reagentLotNumber) => {
         console.log("Subscribed to Reagent!!");
         console.log(userAddress, reagentNDC, reagentLotNumber);
+        let reagentSubscriptionLog = {
+          userAddress: userAddress,
+          reagentNDC: parseInt(reagentNDC._hex, 16),
+          reagentLotNumber: parseInt(reagentLotNumber._hex, 16),
+        };
+        console.log(reagentSubscriptionLog);
+        reagentSubscriptionLogs.push(reagentSubscriptionLog);
       }
     );
   }
@@ -144,7 +160,8 @@ async function oracleFunction() {
   );
 
   charlizeOracleEvents.on("CheckExpirationDate", () => {
-    oracleCounter++;
     console.log("Oracle Counter: %d", oracleCounter);
+    oracleElement.innerText = "Oracle Counter: " + oracleCounter;
+    oracleCounter++;
   });
 }

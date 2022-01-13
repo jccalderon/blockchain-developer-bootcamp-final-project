@@ -5,6 +5,8 @@ let roleNumber = 0;
 let oracleCounter = 0;
 let addressInPendingState;
 let userAddress;
+let reagentCreationLogs = [];
+let reagentSubscriptionLogs = [];
 
 const connectElement = document.getElementById("connect-wallet-button");
 
@@ -70,6 +72,9 @@ const nextAddressElement = document.getElementById("next-address");
 
 const approveAddressElement = document.getElementById("approve-address");
 
+const oracleElement = document.getElementById("oracle");
+
+const expiredReagentsElement = document.getElementById("expired-reagents");
 //***********************************************************************
 
 window.addEventListener("load", detectWallet);

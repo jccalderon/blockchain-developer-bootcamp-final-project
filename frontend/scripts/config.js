@@ -96,7 +96,7 @@ async function userRegistration(event) {
     charlizeUserRegEvents.on(
       "UserRegistered",
       (msgSender, roleNumber, email, stateOfUser, registrationDate) => {
-        console.log("Registration successfuly submited:");
+        console.log("Registration successfuly submitted:");
         console.log(
           msgSender,
           roleNumber.toString(),
