@@ -14,7 +14,7 @@ async function connectWallet() {
   let userAddressBalance = await provider.getBalance(userAddress);
   walletInformationElement.innerText =
     "Your wallet is " +
-    userAddress.substr(0, 4) +
+    userAddress.substr(0, 5) +
     "..." +
     userAddress.substr(38, 43) +
     " NetId is " +

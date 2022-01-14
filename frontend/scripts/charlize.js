@@ -20,6 +20,7 @@ async function producerFunctionality() {
 
   if (isProducer) {
     console.log("ready to party");
+    dateTimeFormElement.style.display = "block";
     charlizeFormTextElement.textContent = "Create a record for a reagent:";
     charlizeElement.style.display = "block";
   } else {
@@ -96,7 +97,8 @@ async function reagentCreationOrSubscription(event) {
   console.log(roleNumber);
 
   let expirationDate =
-    Math.round(new Date().getTime() / 1000) + parseInt(dateTimeOffset) * 60;
+    Math.round(new Date().getTime() / 1000) +
+    parseInt(dateTimeOffset) * ONE_MIN;
 
   console.log(expirationDate);
 
@@ -182,5 +184,39 @@ async function oracleFunction() {
     console.log("Oracle Counter: %d", oracleCounter);
     oracleElement.innerText = "Oracle Counter: " + oracleCounter;
     oracleCounter++;
+
+    let expiredReagents = reagentCreationLogs.filter(
+      (reagent) =>
+        reagent.expirationDate <=
+          Math.round(new Date().getTime() / 1000) - FIVE_MIN &&
+        reagent.expirationDate >=
+          Math.round(new Date().getTime() / 1000) - 2 * FIVE_MIN
+    );
+
+    let txt = "";
+    for (let i = 0; i < expiredReagents.length; i++) {
+      txt = txt.concat(
+        "Expired reagent NDC: " +
+          expiredReagents[i].reagentNDC +
+          " Lot Number: " +
+          expiredReagents[i].reagentLotNumber +
+          "<br>" +
+          "Notify the following addresses: " +
+          "<br>"
+      );
+      // expiredReagentsElement.innerHTML = txt;
+
+      for (let j = 0; j < reagentSubscriptionLogs.length; j++) {
+        if (
+          reagentSubscriptionLogs[j].reagentNDC ===
+            expiredReagents[i].reagentNDC &&
+          reagentSubscriptionLogs[j].reagentLotNumber ===
+            expiredReagents[i].reagentLotNumber
+        ) {
+          txt = txt.concat(reagentSubscriptionLogs[j].userAddress + "<br>");
+        }
+      }
+    }
+    expiredReagentsElement.innerHTML = txt + "<br>";
   });
 }
