@@ -52,6 +52,9 @@ function goToFirstPage() {
   firstPageTextElement.style.display = "block";
   registrationElement.style.display = "none";
   charlizeElement.style.display = "none";
+  charlizePendingRegistrationsElement.style.display = "none";
+  messageElement.innerText = "";
+  transactionHashElement.innerText = "";
 }
 
 async function userRegistration(event) {
@@ -75,29 +78,33 @@ async function userRegistration(event) {
   if (roleNumber === 3) {
     console.log("asking for admin registration");
     let transaction = await charlizeAdminset.registerAdmin(CHARLIZE_ADDRESS, {
-      value: 1,
+      value: 100,
     });
     // Contract instance for reading
     console.log(transaction);
+    transactionHashElement.innerText = "Transaction hash: " + transaction.hash;
     let charlizeUserRegEvents = new ethers.Contract(
       CHARLIZE_ADDRESS,
       CHARLIZE_ABI,
       provider
     );
     // Event listener configuration (event: AccessGranted)
-    charlizeUserRegEvents.on(
+    charlizeUserRegEvents.once(
       "AccessGrantedToAdmin",
       (adminApplicant, userState, registrationAdminDate) => {
         console.log("Admin registration successfuly approved:");
         console.log(adminApplicant, userState, registrationAdminDate);
         successfulApplicationTextElement.style.display = "block";
+        messageElement.innerText = "Admin registration successfuly approved";
       }
     );
     // Producer/Client registrations roles 1 or 2
   } else {
     console.log("Registration in progress...");
+    messageElement.innerText = "Registration in progress...";
     let transaction = await charlize.registerUser(roleNumber, enteredEmail);
     console.log(transaction);
+    transactionHashElement.innerText = "Transaction hash:" + transaction.hash;
     // Contract instance for reading
     let charlizeUserRegEvents = new ethers.Contract(
       CHARLIZE_ADDRESS,
@@ -105,7 +112,7 @@ async function userRegistration(event) {
       provider
     );
     // Event listener configuration (event: UserRegistered)
-    charlizeUserRegEvents.on(
+    charlizeUserRegEvents.once(
       "UserRegistered",
       (msgSender, roleNumber, email, stateOfUser, registrationDate) => {
         console.log("Registration successfuly submitted:");
@@ -117,6 +124,8 @@ async function userRegistration(event) {
           registrationDate
         );
         console.log("Now, it requires admin approval");
+        messageElement.innerText =
+          "Registration successfuly submitted. Now, it requires admin approval.";
       }
     );
   }
@@ -145,6 +154,7 @@ async function validateRegistrations() {
   // console.log("aquí de nuevo");
 
   if (arrayLengthInt === 0) {
+    charlizePendingRegistrationsFormElement.style.display = "none";
     // text: There are no registrations to approve!
     charlizePendingRegistrationsTextElement.style.display = "block";
   } else {
@@ -230,6 +240,8 @@ async function approveRegistrations(event) {
       userRoleNumberInt
     );
     console.log(approvalTransaction);
+    transactionHashElement.innerText =
+      "Transaction hash: " + approvalTransaction.hash;
 
     let charlizeApproveEvents = new ethers.Contract(
       CHARLIZE_ADDRESS,
@@ -237,10 +249,11 @@ async function approveRegistrations(event) {
       provider
     );
     // Event listener configuration (event: AccessGranted)
-    charlizeApproveEvents.on(
+    charlizeApproveEvents.once(
       "AccessGrantedToUser",
       (userAddress, stateOfUser, registrationDate) => {
         console.log("Application Accepted!");
+        messageElement.innerText = "Application Accepted!";
         console.log(userAddress, stateOfUser, registrationDate);
         //nextAddressElement.style.display = "block";
         //approveAddressElement.style.display = "none";
@@ -263,6 +276,8 @@ async function nextAddress() {
 
   let popAddressFromArray = await charlize.popAddressInPendingState();
   console.log(popAddressFromArray);
+  transactionHashElement.innerText =
+    "Transaction hash: " + popAddressFromArray.hash;
 
   let charlizePopAddressEvents = new ethers.Contract(
     CHARLIZE_ADDRESS,
@@ -270,11 +285,14 @@ async function nextAddress() {
     provider
   );
 
-  charlizePopAddressEvents.on(
+  charlizePopAddressEvents.once(
     "PoppedAddressFromPendingStateArray",
     (userAddress, stateOfUser, registrationDate) => {
       console.log("Address popped!");
+      messageElement.innerText = "Address popped!";
       console.log(userAddress, stateOfUser, registrationDate);
+      //charlizePendingRegistrationsFormElement.style.display = "none";
+      //charlizePendingRegistrationsTextElement.style.display = "block";
       //nextAddressElement.style.display = "block";
       //approveAddressElement.style.display = "none";
     }

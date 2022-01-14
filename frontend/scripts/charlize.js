@@ -113,6 +113,7 @@ async function reagentCreationOrSubscription(event) {
       expirationDate
     );
     console.log(reagent);
+    transactionHashElement.innerText = "Transaction hash: " + reagent.hash;
 
     let charlizeReagentEvents = new ethers.Contract(
       CHARLIZE_ADDRESS,
@@ -125,6 +126,7 @@ async function reagentCreationOrSubscription(event) {
       "ReagentCreation",
       async (reagentNDC, reagentLotNumber, userAddress, expirationDate) => {
         console.log("Reagent Created!!");
+        messageElement.innerText = "Reagent Created!!";
         console.log(reagentNDC, reagentLotNumber, userAddress, expirationDate);
         let reagentCreationLog = {
           reagentNDC: parseInt(reagentNDC._hex, 16),
@@ -142,6 +144,8 @@ async function reagentCreationOrSubscription(event) {
       lotNumber
     );
     console.log(subscriptionToReagent);
+    transactionHashElement.innerText =
+      "Transaction hash: " + subscriptionToReagent.hash;
 
     let charlizeSubscriptionToReagentEvents = new ethers.Contract(
       CHARLIZE_ADDRESS,
@@ -153,6 +157,7 @@ async function reagentCreationOrSubscription(event) {
       "SubscribedToReagent",
       async (userAddress, reagentNDC, reagentLotNumber) => {
         console.log("Subscribed to Reagent!!");
+        messageElement.innerText = "Subscribed to Reagent!!";
         console.log(userAddress, reagentNDC, reagentLotNumber);
         let reagentSubscriptionLog = {
           userAddress: userAddress,

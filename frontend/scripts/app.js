@@ -1,5 +1,10 @@
-const CHARLIZE_ADDRESS = "0xD356DC99366c2c7AB66D3AaA2ECa87CF58475a06";
-const CHARLIZEADMINSET_ADDRESS = "0xBA3Dd147ED39F25589688D3Cc435C878170900ea";
+// Kovan Network addresses:
+const CHARLIZE_ADDRESS = "0x956577835510779b19f26FD27041fEAc61C31a7d";
+const CHARLIZEADMINSET_ADDRESS = "0xa786aAf5D4c8Dfc626258A5bD27B46EbAFF2b6b3";
+
+// Rinkeby Network addresses:
+// const CHARLIZE_ADDRESS = "0xD356DC99366c2c7AB66D3AaA2ECa87CF58475a06";
+// const CHARLIZEADMINSET_ADDRESS = "0xBA3Dd147ED39F25589688D3Cc435C878170900ea";
 
 let roleNumber = 0;
 let oracleCounter = 0;
@@ -76,6 +81,11 @@ const approveAddressElement = document.getElementById("approve-address");
 const oracleElement = document.getElementById("oracle");
 
 const expiredReagentsElement = document.getElementById("expired-reagents");
+
+const messageElement = document.getElementById("messages");
+
+const transactionHashElement = document.getElementById("transaction-hash");
+
 //***********************************************************************
 
 window.addEventListener("load", detectWallet);

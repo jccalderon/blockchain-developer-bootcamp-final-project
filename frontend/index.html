@@ -81,16 +81,23 @@
                     <label id="address-to-approve-label" for="adress-to-approve">Loading...</label>
                 </div>            
                 <div>
-                    <button id="log-out-button-3" class="btn btn-alt">Logout</button>
-                    <!-- <button id="next-address" class="btn">Next</button> -->
-                    <button id="approve-address" type="submit" class="btn">Approve</button>
-                </div>
-                <p id="charlize-pending-registrations-text">There are no registrations to approve!</p>               
+                    <button type="button" id="next-address" class="btn">Next</button>
+                    <button type="submit" id="approve-address"  class="btn">Approve</button>
+                </div>            
             </form>
-            <button type="button" id="next-address" class="btn">Next</button>
+            <div>
+                <p id="charlize-pending-registrations-text">There are no registrations to approve!</p> 
+            </div>  
+            <div>
+                <button type="button" id="log-out-button-3" class="btn btn-alt">Logout</button>
+            </div>
         </section>   
-        <div id="oracle"></div>
-        <div id="expired-reagents"></div>   
+        <section>
+            <div id="oracle"></div>
+            <div id="messages"></div>
+            <div id="transaction-hash"></div>
+            <div id="expired-reagents"></div>   
+        </section>
     </main>
 </body>
 </html>
