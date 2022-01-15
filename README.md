@@ -23,6 +23,9 @@ Check first that the Oracle has enough balance: https://keepers.chain.link/kovan
 
 ## Screencast
 
+https://youtu.be/kFsPSUxixa0
+Most of the functionality is shown during the first 5 minutes, go from minute 11:50 to the end to see the effect of the oracle.
+
 ## File structure
 
 ```

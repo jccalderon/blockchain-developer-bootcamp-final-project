@@ -60,7 +60,13 @@ function goToFirstPage() {
 async function userRegistration(event) {
   event.preventDefault();
   const formData = new FormData(event.target);
-  const enteredEmail = formData.get("user-email");
+  let enteredEmail = formData.get("user-email");
+  // this is to avoid sending an email address
+  // to the blockchain without encryption.
+  // Encryption implies having a private key
+  // but solutions using .env files in vanilla
+  // javascript are very complex
+  enteredEmail = "XXXXXXXXXXXXXXXXX";
   console.log(enteredEmail);
   console.log(roleNumber);
   const charlize = new ethers.Contract(
