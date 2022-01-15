@@ -166,13 +166,12 @@ contract Charlize is KeeperCompatibleInterface, Ownable, AccessControl{
     }
 
 
-    ///  @notice  
+    ///  @dev admin, if successful, changes state of registered user 
+    /// from pending to accepted
+    /// admin, if unccessful, changes state of registered user
+    /// from pending to rejected
     function grantAccess(address userAddress, uint256 roleNumber) public virtual onlyAdmin{
-        // admin grants access
-        // admin, if successful, changes state of registered user 
-        // from pending to accepted
-        // admin, if unccessful, changes state of registered user
-        // from pending to rejected
+
         require(userAddressToStateOfUser[userAddress] == UserState.PENDING, "User is not in pending state or wrong address");
         require(roleNumber > 0 || roleNumber < 3, "Invalid role number!");
         bytes32 role;
@@ -188,14 +187,9 @@ contract Charlize is KeeperCompatibleInterface, Ownable, AccessControl{
         emit AccessGrantedToUser(userAddress, UserState.ACCEPTED, registrationDate);
         
     }
-
-    function getPendingStateAddress() public onlyAdmin returns (address){
-        uint256 arrayLength = getLengthAddressInPendingStateArray();
-        address pendingStateAddress = getAddressInPendingState(arrayLength);
-        popAddressInPendingState();
-        // arrayLength = getLengthAddressInPendingStateArray();
-        return pendingStateAddress;
-    }
+    /// @dev the following is a set of helper functions to manage an array of 
+    /// users whose registration is in PENDING state. Users soliciting registration
+    /// are pushed into the array, and users with approved registration are popped  
     function getAddressInPendingState(uint256 positionInArray) public view returns (address) {
         return addressesInPendingState[positionInArray];
     }
@@ -240,15 +234,14 @@ contract Charlize is KeeperCompatibleInterface, Ownable, AccessControl{
 
     /// @dev USER REGISTRATION FUNCTIONS:    
     
-
+    /// @dev user sends application form with data (registrations).
+    /// contract checks the user's address is not already registered  
+    /// Each user is assigned a pending state. 
+    /// DEFAULT_ADMIN_ROLE in another function reads the data of the users in pending state
+    /// DEFAULT_ADMIN_ROLE grants access to users and changes state of users accepted
+    /// TODO: DEFAULT_ADMIN_ROLE may not grant access to users and changes state of users to rejected
     function registerUser(uint256 roleNumber, string memory email) public{
-    // user sends application form with data.
-    // contract checks the user's address is not already registered  
-    // Data is stored in an array of structs.
-    // Each user is assigned a pending state. 
-    // DEFAULT_ADMIN_ROLE in another function reads the data of the users in pending state
-    // DEFAULT_ADMIN_ROLE grants access to users and changes state of users accepted
-    // DEFAULT_ADMIN_ROLE may not grant access to users and changes state of users to rejected
+
     require(userAddressToRegistrationDate[msg.sender] == 0, "This user is already registered, contact Admin");
     userApplicationCount = userApplicationCount + 1;
     UserState stateOfUser = UserState.PENDING;
@@ -258,6 +251,7 @@ contract Charlize is KeeperCompatibleInterface, Ownable, AccessControl{
     uint256 registrationDate = block.timestamp;
     userAddressToRegistrationDate[msg.sender] = registrationDate;
     emit UserRegistered( msg.sender, roleNumber, email, stateOfUser, registrationDate);
+
     }
     
     
@@ -265,14 +259,12 @@ contract Charlize is KeeperCompatibleInterface, Ownable, AccessControl{
 
     /// @dev ADMIN REGISTRATION FUNCTIONS:        
     
+    /// @dev register an address as admin after the payment of a registration fee
+    /// the grantRole helper function, coming from the  AccessControl contract (Openzeppelin) only 
+    /// allows its usage to addresses that were declared as admins through the contract's constructor.
+    /// Thus, charlizeAdminSet serves as proxy for this transactions  
     function registerAdmin(address adminApplicant) public payable returns(uint256){
-    // user sends application form with data.
-    // contract checks the user's address is not already registered  
-    // Data is stored in an array of structs.
-    // Each user is assigned a pending state. 
-    // DEFAULT_ADMIN_ROLE in another function reads the data of the users in pending state
-    // DEFAULT_ADMIN_ROLE grants access to users and changes state of users accepted
-    // DEFAULT_ADMIN_ROLE may not grant access to users and changes state of users to rejected
+
         require(userAddressToRegistrationDate[adminApplicant] == 0, "This Admin is already registered");
         require(msg.value == adminApplicationFee * 1 wei, "Value transfered is not enough to cover Admin application");
         balance += msg.value;
@@ -300,11 +292,7 @@ contract Charlize is KeeperCompatibleInterface, Ownable, AccessControl{
     
     function createReagent(uint256 reagentNDC, uint256 reagentLotNumber, uint256 expirationDate) 
         public onlyProducer{
-        // creates a hash of the parameters reagentNDC and reagentLotNumber that corresponds
-        // to the reagentID
-        // put data + company address +reagent ID + reagent state in a reagent struct and 
-        // pushes it into the reagents array 
-        // push the reagent ID into the array associated to the reagent's expiration date
+
         bytes32 reagentID = reagentId(reagentNDC, reagentLotNumber);
         require(!(reagentIDToReagentCreationDate[reagentID] > 0), "Reagent already existing!");
         uint256 reagentCreationDate = block.timestamp; 
@@ -321,11 +309,7 @@ contract Charlize is KeeperCompatibleInterface, Ownable, AccessControl{
     
     function subscribeToAReagent(uint256 reagentNDC, uint256 reagentLotNumber) 
         public onlyClient{
-        // obtain a hash from reagentNDC reagentLotNumber
-        // verify(require) if the reagentID exists
-        // push client's address in the client's array related to the corresponding
-        // reagentID 
-        // emit log
+
         bytes32 reagentID = reagentId(reagentNDC, reagentLotNumber);
         require(reagentIDToReagentCreationDate[reagentID] > 0, "Solicited Reagent doesn't exist, contact Admin");
         // uint256 subscriptionDate = block.timestamp;
@@ -335,6 +319,8 @@ contract Charlize is KeeperCompatibleInterface, Ownable, AccessControl{
         
     }
     
+    /// @dev helper function to ease the management of reagents data by assigning a single identifier
+    /// to each reagent, through a hash of NDC and lotnumber  
     function reagentId(uint256 reagentNDC, uint256 reagentLotNumber) public pure returns(bytes32){
         
          return keccak256(abi.encode(reagentNDC, reagentLotNumber));
@@ -351,11 +337,11 @@ contract Charlize is KeeperCompatibleInterface, Ownable, AccessControl{
     ///      Off-chain a keeper node runs a simulation of the checkUpkeep function.
     ///      when a condition is met, the keeper broadcasts
     ///      a transaction to the blockchain executing the 
-    ///      performUpkeep function. When the performUpkeep function is executed
-    ///      an email is sent to all the Clients whose reagent has expired.
+    ///      performUpkeep function. When the performUpkeep function is executed emits
+    ///      an event that a handler at the frontend is ready to listen.
     ///      When the current date corresponds to the first day of the month, the 
-    ///      condition is met. However, for testing purposes, when the condition will 
-    ///      be met every hour.  
+    ///      condition is met. However, for testing purposes, the condition will 
+    ///      be met every 5 minutes.  
     /// @param /*checkData*/ (not used in this case)
     /// @return upkeepNeeded (if true the keeper executes the performUpkeep function)
     ///         /*performData*/ not used  
@@ -397,7 +383,7 @@ contract Charlize is KeeperCompatibleInterface, Ownable, AccessControl{
 }
 
 
-
+// @dev proxy contract
 contract CharlizeAdminSet is Ownable{
     
     constructor(){
