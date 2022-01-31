@@ -1,6 +1,6 @@
 # Design pattern decisions
 
-Charlize comprises five different types of functions:
+Charlize comprises six different types of functions:
 
 1. Access control functions
 2. User registration functions
